@@ -4,7 +4,6 @@
 #include "formula.h"
 
 #include <functional>
-#include <unordered_set>
 #include <optional>
 #include <string>
 #include <vector>
@@ -16,6 +15,7 @@ class Cell : public CellInterface
 {
 public:
     Cell(SheetInterface& sheet, Position pos);
+    Cell(SheetInterface& sheet, Position pos, std::string text);
     virtual ~Cell() override = default;
 
     void                  Set(std::string text);
@@ -85,17 +85,6 @@ private:
         std::string value_;
     };
 
-    struct HashPosition
-    {
-        size_t operator() (const Position& pos) const
-        {
-            return std::hash<double>{}(pos.col)*
-                   std::hash<double>{}(pos.row) * 10;
-        }
-    };
-
-    using Positions = std::unordered_set<Position, HashPosition>;
-
 private:
     std::unique_ptr<Impl> MakeImpl(std::string text) const;   // Создание конкретной реализации значения ячейки
     bool CheckCyclicality(std::unique_ptr<Impl>& impl) const; // Проверка циклической зависимости
@@ -104,9 +93,8 @@ private:
     void RemoveOldDependents();
     void AddNewDependents(const Positions& new_dependents);
     void AddReferencedCells(const std::vector<Position>& new_refs);
-    void RemoveDependents(Position pos); // Удаляет данную ячейку из списка зависимых ячеек
-    void AddDependents(Position pos);    // Добавляет ячейку в список зависимых ячеек
     void ResetCacheDependents();
+
 private:
     SheetInterface& sheet_;               // Ссылка на таблицу, к которой принадлежит ячейка
     

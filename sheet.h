@@ -6,10 +6,10 @@
 #include <functional>
 #include <vector>
 
-using Table = std::vector<std::vector<std::unique_ptr<Cell>>>;
 
 class Sheet : public SheetInterface
 {
+    using Table = std::unordered_map<Position, std::unique_ptr<Cell>, HashPosition>;
 public:
     Sheet() = default;
     virtual ~Sheet() override;
@@ -27,17 +27,13 @@ public:
 
     void PrintTexts(std::ostream& output) const override;
 
-private:
-    // Методы редактирования
-    void ResizeCol(int new_size);             // Изменяет размер указанного столбца
-    void ResizeRow(int new_size);             // Изменяет размер до указанной строки
-    void ExpandToPos(Position pos);           // Расширяет область согласно указанной позиции
-
-    bool IsCellAvailable(Position pos) const; // Находится ли переданная позиция в пределах зоны таблицы
-    bool IsEmptyCol(int col) const;           // Пустой ли указанный столбец
-    bool IsEmptyRow(int row) const;           // Пустая ли указанная строка
+    bool Sheet::IsCellAvailable(Position pos) const
+    {
+        Size size_area = GetPrintableSize();
+        return pos.IsValid() ? pos.row < size_area.rows && pos.col < size_area.cols : false;
+    }
 
 private:
     Table table_;
-    Size size_area_;
+    Positions positions_;
 };

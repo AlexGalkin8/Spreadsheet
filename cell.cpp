@@ -13,6 +13,16 @@ Cell::Cell(SheetInterface& sheet, Position pos)
 {
 }
 
+Cell::Cell(SheetInterface& sheet, Position pos, std::string text)
+    : sheet_(sheet)
+    , pos_(pos)
+    , dependents_()
+    , includes_()
+    , cache_(std::nullopt)
+{
+    Set(text);
+}
+
 void Cell::Set(std::string text)
 {
     auto value = MakeImpl(std::move(text)); // Задаём значение ячейки
@@ -60,7 +70,7 @@ void Cell::SetPos(Position pos)
     pos_ = pos;
 }
 
-inline bool Cell::IsReferenced() const
+bool Cell::IsReferenced() const
 {
     return !dependents_.empty() || !includes_.empty();
 }
@@ -130,18 +140,8 @@ void Cell::AddNewDependents(const Positions& new_dependents)
         if (!pos.IsValid() || !cell)
             continue;
 
-        cell->AddDependents(pos);
+        cell->dependents_.insert(pos);
     }
-}
-
-void Cell::RemoveDependents(Position pos)
-{
-    dependents_.erase(pos);
-}
-
-void Cell::AddDependents(Position pos)
-{
-    dependents_.insert(pos);
 }
 
 void Cell::ResetCacheDependents()

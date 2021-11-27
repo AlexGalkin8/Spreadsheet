@@ -8,7 +8,7 @@
 #include <variant>
 #include <vector>
 #include <cassert>
-
+#include <unordered_set>
 
 // Позиция ячейки. Индексация с нуля.
 struct Position
@@ -28,6 +28,18 @@ struct Position
     static const int MAX_COLS = 16384;
     static const Position NONE;
 };
+
+
+struct HashPosition
+{
+    size_t operator() (const Position& pos) const
+    {
+        return std::hash<double>{}(pos.col)*
+            std::hash<double>{}(pos.row) * 10;
+    }
+};
+
+using Positions = std::unordered_set<Position, HashPosition>;
 
 
 struct Size
